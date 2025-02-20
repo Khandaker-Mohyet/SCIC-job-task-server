@@ -3,7 +3,7 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const port = process.env.PORT || 4000
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // middleware
 app.use(cors())
@@ -35,18 +35,52 @@ async function run() {
     const taskCollection = client.db('ScicJobTask').collection('task');
 
     // task
+
+    app.get('/task', async (req, res) => {
+      const cursor = taskCollection.find()
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+
+    app.get("/task/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await taskCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.delete('/task/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await taskCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    app.put('/task/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const option = { upsert: true };
+      const updateTask = req.body;
+      const task = {
+        $set: {
+          title: updateTask.title,
+          category: updateTask.category,
+          description: updateTask.description,
+          timestamp: new Date().toLocaleString()
+        }
+      }
+      const result = await taskCollection.updateOne(filter, task, option)
+      res.send(result)
+    })
+
+
     app.post('/task', async (req, res) => {
       const newTask = req.body;
       const result = await taskCollection.insertOne(newTask)
       res.send(result)
     })
 
-    app.get('/task', async (req, res) => {
-      const cursor = taskCollection.find()
-      const result = await cursor.toArray()
-      res.send(result)
-
-    })
+    
 
 
     // user
