@@ -32,9 +32,31 @@ async function run() {
     await client.connect();
 
     const userCollection = client.db('ScicJobTask').collection('user');
+    const taskCollection = client.db('ScicJobTask').collection('task');
+
+    // task
+    app.post('/task', async (req, res) => {
+      const newTask = req.body;
+      const result = await taskCollection.insertOne(newTask)
+      res.send(result)
+    })
+
+    app.get('/task', async (req, res) => {
+      const cursor = taskCollection.find()
+      const result = await cursor.toArray()
+      res.send(result)
+
+    })
 
 
     // user
+
+    app.get('/user', async (req, res) => {
+      const cursor = userCollection.find()
+      const result = await cursor.toArray()
+      res.send(result)
+
+    })
 
     app.post('/user', async (req, res) => {
       const newUsers = req.body;
